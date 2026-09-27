@@ -8,11 +8,7 @@ export function drawTerrain(ctx: CanvasRenderingContext2D, level: LevelDefinitio
     ctx.strokeStyle='#587060';ctx.lineWidth=1
     for(let x=t.x+64;x<t.x+t.width;x+=64){ctx.beginPath();ctx.moveTo(x,t.y+7);ctx.lineTo(x,t.y+18);ctx.stroke()}
   }
-  ctx.font='10px ui-monospace, monospace';ctx.letterSpacing='1px'
-  ctx.fillStyle='#7b8a77';ctx.fillText('01 / THE RISE',708,353);ctx.fillText('02 / THE LEAP',1684,300)
-  ctx.strokeStyle='#aebdaa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(1696,324);ctx.lineTo(1840,324);ctx.stroke();ctx.setLineDash([])
-  ctx.fillStyle='#829480';ctx.fillText('144 px',1742,315)
-  ctx.letterSpacing='0px'
+  ctx.font='12px system-ui, sans-serif'
   // Original, procedural start and exit markers.
   ctx.fillStyle='#74937a';ctx.fillRect(48,365,3,83)
   ctx.fillStyle='#b7cc9e';ctx.beginPath();ctx.moveTo(51,365);ctx.lineTo(100,365);ctx.lineTo(89,387);ctx.lineTo(51,387);ctx.fill()

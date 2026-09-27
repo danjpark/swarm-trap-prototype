@@ -13,7 +13,7 @@ export function updateRunner(r: Runner, dt: number, surfaces: Surface[], force: 
     const probe = front + lookAhead(r)
     const wall = surfaces.some(s => s.x >= front - 1 && s.x <= probe && s.y < feet - 8 && s.y > feet - 105)
     const floor = surfaces.some(s => probe >= s.x && probe <= s.x + s.width && Math.abs(s.y - feet) < 8)
-    if ((wall || !floor) && r.pendingJump < 0) r.pendingJump = (1 - r.stats.reaction) * 0.30
+    if ((wall || !floor) && r.pendingJump < 0) r.pendingJump = (1 - r.stats.reaction) * 0.17
   }
   if (r.pendingJump >= 0) {
     r.pendingJump -= dt

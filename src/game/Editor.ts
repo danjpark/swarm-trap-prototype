@@ -24,7 +24,7 @@ export class Editor {
   valid(d: TrapDefinition, ignoreId?: string) {
     const { x, y } = d.position
     const width = d.type === 'track' ? 128 : d.type === 'platform' ? 96 : 16
-    if (x < 416 || x + width > 2848 || y < 48 || y > 448) return false
+    if (x < this.level.spawnPoint.x + 352 || x + width > this.level.exitArea.x - 64 || y < 48 || y > 448) return false
     if (d.type === 'track') {
       if (!this.level.terrain.some(t => x >= t.x && x + width <= t.x + t.width && y === t.y)) return false
       if (this.level.terrain.some(t => overlaps({x,y:y-12,width,height:12}, t))) return false

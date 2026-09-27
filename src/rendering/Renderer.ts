@@ -14,16 +14,16 @@ export class Renderer {
   scale = 1
   height = 560
   constructor(canvas: HTMLCanvasElement) { this.canvas=canvas;this.ctx=canvas.getContext('2d')! }
-  resize(camera: Camera) {
+  resize(camera: Camera, worldWidth: number) {
     const rect=this.canvas.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio,2)
     if(this.canvas.width!==Math.round(rect.width*dpr)||this.canvas.height!==Math.round(rect.height*dpr)){
       this.canvas.width=Math.round(rect.width*dpr);this.canvas.height=Math.round(rect.height*dpr)
     }
-    this.scale=rect.height/this.height
-    camera.width=rect.width/this.scale
+    this.scale=rect.width/worldWidth
+    camera.fit(worldWidth)
   }
   draw(w: World, camera: Camera, options: { build: boolean; debug: boolean; selected: string|null; ghost: GhostReplay|null; candidate: TrapDefinition|null; valid: boolean; selectedRunner: number|null }) {
-    this.resize(camera)
+    this.resize(camera, w.level.width)
     const c=this.ctx, dpr=Math.min(window.devicePixelRatio,2), width=this.canvas.width/dpr
     c.setTransform(dpr,0,0,dpr,0,0)
     c.fillStyle='#edf0e5';c.fillRect(0,0,width,this.canvas.height/dpr)
@@ -61,20 +61,4 @@ export class Renderer {
     }
     c.setTransform(1,0,0,1,0,0)
   }
-  minimap(canvas: HTMLCanvasElement, w: World, camera: Camera) {
-    const rect=canvas.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio,2)
-    if(canvas.width!==Math.round(rect.width*dpr)||canvas.height!==Math.round(rect.height*dpr)){
-      canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr)
-    }
-    const c=canvas.getContext('2d')!, scale=rect.width/w.level.width
-    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,rect.width,rect.height)
-    c.fillStyle='#dce3d7'
-    for(const t of w.level.terrain)c.fillRect(t.x*scale,18-(448-t.y)*.09,t.width*scale,10+(448-t.y)*.09)
-    for(const t of w.traps){c.fillStyle=t.definition.type==='fire'?'#d67b56':t.definition.type==='track'?'#c8a151':'#72a0a7';c.fillRect(t.position.x*scale,9,5,14)}
-    c.fillStyle='#4a7157'
-    for(const r of w.runners)if(r.alive&&!r.finished)c.fillRect(r.position.x*scale,14,2,4)
-    c.fillStyle='#58725a12';c.fillRect(camera.x*scale,1,camera.width*scale,34)
-    c.strokeStyle='#82977a';c.strokeRect(camera.x*scale+.5,1.5,camera.width*scale-1,32)
-  }
 }
-

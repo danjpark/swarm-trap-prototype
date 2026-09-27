@@ -10,7 +10,6 @@ import type { TrapType, TrapDefinition } from '../traps/Trap.ts'
 import { RunRecorder } from '../replay/RunRecorder.ts'
 import type { Recording } from '../replay/RunRecorder.ts'
 import { GhostReplay } from '../replay/GhostReplay.ts'
-import { clamp } from '../types/geometry.ts'
 export type GameMode='BUILD'|'PREVIEW'|'RUN'
 export class Game {
   world=new World(level01)
@@ -37,7 +36,6 @@ export class Game {
   private candidate:TrapDefinition|null=null
   private pointer:{x:number;y:number}|null=null
   private dragging:{id:string;startX:number;startY:number;offsetX:number;offsetY:number}|null=null
-  private keys=new Set<string>()
   private uiTime=0
   constructor(){
     this.ui=new GameUI(this)
@@ -51,15 +49,15 @@ export class Game {
   start(mode:'PREVIEW'|'RUN'){
     if(this.latestRecording){this.previousRecording=this.latestRecording;this.ghost=new GhostReplay(this.latestRecording)}
     this.world=new World(level01);this.syncTraps()
-    this.mode=mode;this.paused=false;this.camera.x=0;this.camera.follow=true
+    this.mode=mode;this.paused=false;this.camera.x=0;this.camera.fit(level01.width)
     this.runFrames=0;this.runSeconds=0;this.runCost=0
     this.selectedRunner=null;this.candidate=null
     this.recorder=new RunRecorder();this.recorder.capture(this.world);this.stepper.reset()
-    this.ui.el('run-banner').hidden=true;this.ui.inspect();this.ui.update()
+    this.ui.inspect();this.ui.update()
   }
   build(){
     this.mode='BUILD';this.paused=false;this.world=new World(level01);this.syncTraps();this.stepper.reset()
-    this.ui.el('run-banner').hidden=true;this.ui.inspect();this.ui.update()
+    this.ui.inspect();this.ui.update()
   }
   reset(){if(this.mode==='BUILD'){this.world=new World(level01);this.syncTraps();this.camera.x=0}else this.start(this.mode)}
   togglePause(){if(this.mode!=='BUILD'&&!this.world.complete){this.paused=!this.paused;this.stepper.reset();this.ui.update()}}
@@ -95,7 +93,7 @@ export class Game {
         canvas.setPointerCapture(e.pointerId);this.ui.inspect();this.ui.update()
       }else if(this.editor.tool!=='select'){
         const d=this.editor.candidate(this.editor.tool,p.x,p.y)
-        if(this.editor.place(d)){this.syncTraps();this.ui.inspect();this.ui.toast('Device placed. Preview to see what changes.')}
+        if(this.editor.place(d)){this.syncTraps();this.ui.inspect();this.ui.toast('Device placed. Run the swarm to see what changes.')}
         else this.ui.toast('Place in open space. Tracks need solid ground. Start and exit stay clear.')
       }else{this.editor.selectedId=null;this.ui.inspect()}
     }
@@ -115,16 +113,9 @@ export class Game {
       const p=this.point(e as PointerEvent),hit=this.editor.hit(p.x,p.y)
       if(hit){this.editor.selectedId=hit.id;this.deleteSelected()}
     }
-    const map=this.ui.el<HTMLCanvasElement>('minimap')
-    map.onpointerdown=e=>{
-      const rect=map.getBoundingClientRect()
-      this.camera.x=clamp((e.clientX-rect.left)/rect.width*level01.width-this.camera.width/2,0,level01.width-this.camera.width)
-      this.camera.follow=false
-    }
     window.addEventListener('keydown',e=>{
-      if((e.target as HTMLElement).matches('input,select,textarea')||this.ui.el<HTMLDialogElement>('welcome').open)return
-      if(['ArrowLeft','ArrowRight',' ','Delete','Backspace'].includes(e.key))e.preventDefault()
-      this.keys.add(e.key.toLowerCase())
+      if((e.target as HTMLElement).matches('input,select,textarea'))return
+      if([' ','Delete','Backspace'].includes(e.key))e.preventDefault()
       if(e.repeat)return
       if(e.key===' ')this.togglePause()
       if(e.key==='Escape')this.selectTool('select')
@@ -133,13 +124,9 @@ export class Game {
       if(e.key==='2')this.selectTool('track')
       if(e.key==='3')this.selectTool('platform')
     })
-    window.addEventListener('keyup',e=>this.keys.delete(e.key.toLowerCase()))
-    window.addEventListener('blur',()=>this.keys.clear())
   }
   frame(dt:number){
     const frameStart=performance.now(), measure=this.mode!=='BUILD'&&!this.paused&&!this.world.complete
-    const direction=(this.keys.has('d')||this.keys.has('arrowright')?1:0)-(this.keys.has('a')||this.keys.has('arrowleft')?1:0)
-    if(direction){this.camera.follow=false;this.camera.pan(direction*dt*720,level01.width);this.candidate=null}
     if(this.mode!=='BUILD'&&!this.paused&&!this.world.complete){
       this.stepper.advance(dt,this.speed,()=>{
         if(this.world.complete)return
@@ -147,15 +134,12 @@ export class Game {
         if(this.world.complete){this.latestRecording=this.recorder.finish(this.world);this.ui.results()}
       })
     }
-    if(this.mode!=='BUILD')this.camera.update(this.world,dt)
-    this.camera.pan(0,level01.width)
     let candidate=this.candidate
     if(this.dragging&&this.pointer){
       const d=this.editor.selected!
       candidate=this.editor.candidate(d.type,this.pointer.x-this.dragging.offsetX,this.pointer.y-this.dragging.offsetY)
     }
     this.renderer.draw(this.world,this.camera,{build:this.mode==='BUILD',debug:this.debug,selected:this.editor.selectedId,ghost:this.showGhost&&this.mode!=='BUILD'?this.ghost:null,candidate,valid:candidate?this.editor.valid(candidate,this.dragging?.id):false,selectedRunner:this.selectedRunner})
-    this.renderer.minimap(this.ui.el<HTMLCanvasElement>('minimap'),this.world,this.camera)
     this.uiTime+=dt
     if(this.uiTime>.1){this.ui.update();this.uiTime=0}
     if(measure){this.runFrames++;this.runSeconds+=dt;this.runCost+=performance.now()-frameStart}

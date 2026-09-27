@@ -4,9 +4,9 @@ import { createTrap } from '../src/traps/factory.ts'
 import type { TrapDefinition } from '../src/traps/Trap.ts'
 const layouts: Record<string,TrapDefinition[]> = {
   baseline: [],
-  fire: [{id:'wheel',type:'fire',position:{x:1216,y:416},radius:64,rotationSpeed:1.5,armCount:4}],
-  conveyor: [{id:'belt',type:'track',position:{x:1568,y:448},strength:165}],
-  platform: [{id:'lift',type:'platform',position:{x:1728,y:448},minY:320,maxY:448,speed:80}],
+  fire: [{id:'wheel',type:'fire',position:{x:896,y:416},radius:64,rotationSpeed:1.5,armCount:4}],
+  conveyor: [{id:'belt',type:'track',position:{x:992,y:448},strength:165}],
+  platform: [{id:'lift',type:'platform',position:{x:1120,y:448},minY:320,maxY:448,speed:80}],
 }
 for(const [name,defs] of Object.entries(layouts)){
   const samples:number[]=[]

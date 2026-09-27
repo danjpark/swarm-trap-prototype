@@ -1,17 +1,62 @@
-# Swarm / Trap — prototype v0.1
+# Swarm / Trap — alpha
 
 **[Play the live demo](https://danjpark.github.io/swarm-trap-prototype/)** ·
 [Public repository](https://github.com/danjpark/swarm-trap-prototype)
 
-Build a platforming death course, watch 100 small autonomous creatures attempt
-it, then change the course and compare the timelines. One level, three devices,
-no accounts, servers, game engines, or runtime dependencies.
+Place obstacles, run 100 little creatures through the course, and change your
+setup after watching what happens. Vite + vanilla TypeScript + Canvas 2D.
+No game engine, backend, or runtime dependencies.
 
-![The playable prototype](docs/prototype.png)
+![The full course and simplified controls](docs/prototype.png)
+
+## Design rule: the environment starts fair
+
+**Every unmodified level must let all 100 critters reach the exit.** Deaths and
+failed runs should come from the player's devices and their effects, not an
+inherently lethal default course. This applies to every future level as well as
+the current one.
+
+The first course is now short enough to see from start to exit at once. Its hill
+and gap remain, but the gap and reaction timing provide safe traversal for the
+entire starting population. Runners are not invulnerable: fire, altered movement,
+and falls after player modifications still count normally.
+
+Register future levels in `src/levels/index.ts`. The regression suite checks
+every registered level across 100 seeded populations and every extreme
+combination of supported Speed/Reaction/Agility traits, including all spawn
+positions. Default level devices are included in these checks. Do not accept a
+level that kills unmodified runners.
+
+Default level result: **100 escaped, 0 stopped**, about **8.1 seconds** at the
+fixed normal pace. No speed controls or device tuning are exposed in this alpha.
+
+## Play
+
+The page opens directly in **Build mode**. All build tools are grouped below
+the full-width course. The large green Build mode button and highlighted panel
+indicate that editing is enabled.
+
+1. Pick **Fire Wheel**, **Reverse Track**, or **Vertical Platform**.
+2. Click the course to place the device on the grid.
+3. Select or drag a placed device to reposition it; Remove deletes it.
+4. Choose **Run swarm**. Building locks while the creatures move.
+5. **Back to build** returns to editing. Change the setup and run again.
+
+Pause and Restart appear only while a run is underway. **Show previous run**
+compares the last completed timeline in lavender with the current green
+creatures. The result panel shows only stopped/escaped totals and percent
+stopped. Trait averages, technical metrics, trap parameters, scrolling controls,
+the tutorial overlay, branding, and the duplicate Preview/Commit buttons are
+hidden or removed from the player interface.
+
+Keyboard: **1 / 2 / 3** selects devices, **Escape** returns to selection,
+**Delete / Backspace** removes the selected device, and **Space** pauses/resumes.
+Right-click a device to remove it. Start and exit areas are protected; tracks
+need ground and platforms need a clear vertical path.
 
 ## Run locally
 
-Use **Node.js 24 LTS or newer** (Node's native TypeScript support runs the tests).
+Use Node.js 24 LTS or newer.
 
 ```sh
 git clone https://github.com/danjpark/swarm-trap-prototype.git
@@ -20,210 +65,61 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, usually
+Open the URL printed by Vite, normally
 `http://localhost:5173/swarm-trap-prototype/`.
 
-```sh
-npm test             # 14 deterministic simulation / editor / replay tests
-npm run build        # strict TypeScript check + production bundle
-npm run preview      # serve dist at localhost:4173/swarm-trap-prototype/
-npm run benchmark    # 100-runner CPU benchmark; 20 measured runs after warmup
-```
+- `npm test`: 14 simulation, baseline, editor, camera, and replay tests.
+- `npm run build`: strict TypeScript check and production bundle.
+- `npm run preview`: production preview at port 4173.
+- `npm run benchmark`: developer CPU measurements, outside the player UI.
 
-## Play
-
-1. Choose **Start Building**. A no-trap preview is a useful baseline.
-2. Select one of the three devices and click a valid position on the 32 px grid.
-3. **Preview Future** runs all 100 creatures. **Commit Run** uses the same physics
-   but labels the result as committed.
-4. Watch alive/dead/escaped counts and the final survivor averages.
-5. Return to **Build**, revise the course, and run again. **Show Previous Run**
-   draws the last completed timeline in translucent lavender.
-
-| Control | Action |
-| --- | --- |
-| 1 / 2 / 3 | Select Fire Wheel / Reverse Track / Vertical Platform |
-| Click a device | Select it and expose configuration |
-| Drag a placed device | Reposition; invalid moves preserve the old location |
-| Delete / Backspace / right-click a device | Remove selected / clicked device |
-| Escape | Select / move tool |
-| A / D or left / right arrows | Pan horizontally; disables automatic follow |
-| Course minimap / camera slider | Jump or pan to another part of the level |
-| Follow swarm | Follow the active population |
-| Space / pause button | Pause or resume |
-| Reset | Restart the current simulation with identical seed and traps; in Build, restage and pan to start |
-| Clear all | Remove every device in Build |
-| Speed | 0.5×, 1×, 2×, or 4×; changes elapsed simulation steps, never physics timestep |
-| Debug | FPS, average run cost, tick, seed, population means, bounds, look-ahead |
-| Click a runner with Debug enabled during a run | Inspect that runner's traits and state |
-
-The spawn area and exit approach are protected from placement. Tracks snap to
-a solid, unobstructed surface. Platforms need a clear vertical travel path.
-The editor validates placement and configuration instead of silently embedding
-devices in terrain. Controls lock during simulation. A hidden browser tab pauses
-an active run; resume when you return.
-
-## Devices and traits
-
-- **Fire Wheel:** outer 28% of rotating arms is hazardous; the hub is harmless.
-  Configure radius, angular velocity (radians/second), and arm count.
-- **Reverse Track:** reduces desired horizontal velocity on contact. Configure
-  opposing speed in px/s. It causes no direct damage; a weak or stalled jump
-  can still be fatal.
-- **Vertical Platform:** one-way, 96 px wide; carries grounded runners between
-  top and bottom coordinates at a configurable px/s speed. World Y increases
-  downward. It can help the swarm as well as disrupt it.
-
-Stats are independently seeded values in 0.40–0.60. **Speed** maps to running
-velocity, **Reaction** controls look-ahead and response delay, and **Agility**
-controls jump impulse. Runners perceive local terrain, not a precomputed route.
-The creatures do not collide with one another.
-
-With seed **240519** and no traps, **61 escape / 39 fall** in about 15.7 simulated
-seconds. Controlled fixtures demonstrate the devices' effects:
-
-| Fixture | Escaped | Stopped |
-| --- | ---: | ---: |
-| No devices | 61 | 39 |
-| Fire Wheel at (1216, 416), default settings | 0 | 100 |
-| Reverse Track at (1568, 448), opposing speed 165 | 6 | 94 |
-| Platform at (1728, 448), top 320, bottom 448, speed 80 | 65 | 35 |
-
-These are tuning references, not prescribed solutions. The level is intentionally
-easy to overwhelm with unlimited devices.
-
-## Architecture and file tree
-
-Simulation modules have **no Canvas or DOM dependencies**. The UI owns editing
-intent, World owns state, and renderers only observe it.
+## Architecture
 
 ```text
 src/
-  main.ts                     application entry
-  game/
-    Game.ts                   modes, editing input, orchestration
-    GameLoop.ts               requestAnimationFrame + fixed-step accumulator
-    World.ts                  population, interactions, outcomes
-    Camera.ts                 world-coordinate tracking and panning
-    Editor.ts                 snapping, selection, validation
-  simulation/
-    Runner.ts                 runner state and dimensions
-    RunnerStats.ts            independent trait data and aggregation
-    RunnerSystem.ts           local sensing and jump state machine
-    Physics.ts                gravity, AABB collisions, one-way surfaces
-    SeededRandom.ts           centralized seeded PRNG
-  levels/
-    LevelDefinition.ts        serializable level schema
-    level01.ts                the only level: rise, gap, exit
-  traps/
-    Trap.ts                   data and common interaction contract
-    FireWheel.ts
-    ReverseTrack.ts
-    VerticalPlatform.ts
-    factory.ts                device construction
-  rendering/
-    Renderer.ts               scene, ghosts, overview map
-    RunnerRenderer.ts         swappable creature renderer
-    TerrainRenderer.ts
-    TrapRenderer.ts
-  assets/AssetManager.ts      optional PNG/WebP sheet and animation definitions
-  replay/
-    RunRecorder.ts            position samples at 15 Hz
-    GhostReplay.ts            tick-aligned, non-interacting playback
-  ui/GameUI.ts                HTML controls, HUD, inspector, results
-  types/geometry.ts           world coordinate primitives
-  style.css
-tests/simulation.test.ts      deterministic regression suite
-scripts/benchmark.ts          headless CPU measurements
-docs/                        screenshot and verification notes
-.github/workflows/deploy.yml  GitHub Actions Pages deployment
+  game/         modes, editor input, fixed loop, world, full-course camera
+  simulation/   runner data, traits, seeded RNG, local sensing, AABB physics
+  levels/       level schema, level01, and the tested level registry
+  traps/        common contract and the three device implementations
+  rendering/    procedural creatures, terrain, devices, and ghosts
+  replay/       15 Hz transform sampling and non-colliding ghost playback
+  ui/           grouped build/run controls and simple counts
+  assets/       optional future PNG/WebP sprite and animation definitions
+  types/        world geometry
+tests/          deterministic regression checks
+scripts/        headless benchmark
+docs/           screenshot, design decisions, and verification notes
+.github/        Pages deployment workflow
 ```
 
-Physics runs at **120 Hz**. Playback speed determines the number of fixed steps
-per rendered frame. Trap phase, runner movement, and recordings all use
-simulation time. Long frames are capped at 100 ms to avoid a catch-up spiral;
-a severely overloaded machine slows wall-clock playback, not simulation rules.
+Physics runs at a deterministic 120 Hz; rendering uses requestAnimationFrame.
+The camera fits the complete 1,600-unit course horizontally without stretching
+its aspect ratio. Simulation logic has no Canvas or DOM dependencies.
 
-The trap interface supplies updates, optional horizontal forces, optional
-one-way surfaces, and contact interactions. New behavior does not require
-rewriting the runner system. Trap/level definitions contain data, so JSON
-export/import can be added later without changing physics.
+Runner traits remain separate data objects internally. Trap behavior remains
+data-driven, but the UI uses fixed defaults. Completed runs are recorded at
+15 Hz; aborted runs do not replace the comparison. Ghosts do not affect physics.
 
-A completed recording stores typed-array position/visibility samples at 15 Hz.
-Only the latest completed run and the preceding comparison are retained; aborted
-runs never replace a completed recording. Dead and finished ghosts disappear,
-and ghosts never enter the collision system.
+A future Godot port maps World to a gameplay scene, runners to CharacterBody2D,
+traps to Node2D/Area2D, definitions to Resources, the fixed loop to
+`_physics_process()`, and rendering to Sprite2D/AnimatedSprite2D. The port should
+preserve the safe-baseline rule, behavior, seeds, and test fixtures.
 
-## Verification and performance
+## Deployment and limitations
 
-See [verification notes](docs/VERIFICATION.md) for tests, browser checks, and
-measurement context. The local browser baseline averaged **144 FPS** on this
-144 Hz display and **0.54 ms/frame** for simulation plus Canvas drawing with
-debug enabled. This is a measurement on the development machine, not a guarantee
-for all devices. Run the benchmark or enable Debug to measure your own system.
+Pushes to `main` and manual dispatch run install → tests → build → Pages
+artifact upload → deployment. The publishing source is **GitHub Actions**.
+Vite's base is `/swarm-trap-prototype/`; update it if renaming the repository.
+The [verification notes](docs/VERIFICATION.md) describe current checks.
 
-## Deployment
+Desktop first. Edits and recordings are in memory and reset on reload. No
+generations, progression, or saving. At 60 simulated seconds, contained runners
+count as stopped. Platforms are one-way, with no crushing or runner-to-runner
+collision. Full-course display on small phones makes the creatures small;
+mobile interaction is not a target. Firefox/Safari have not been independently
+verified. All graphics are original procedural art; see [asset provenance](ASSET_LICENSES.md).
 
-Pushes to `main`, or a manual `workflow_dispatch`, run:
-checkout → Node LTS → `npm ci` → tests → production build →
-configure Pages → upload `dist` → deploy Pages.
-
-The public repository's Pages publishing source is **GitHub Actions**.
-Vite uses `base: '/swarm-trap-prototype/'`; update this if renaming the repo.
-No Jekyll or backend is involved. Deployment follows
-[Vite's GitHub Pages guidance](https://vite.dev/guide/static-deploy.html#github-pages).
-
-After deployment, verify the live page and play a complete run. Successful CI
-alone does not prove that subpath JavaScript, CSS, and favicon URLs resolve.
-
-## Current scope and limitations
-
-- Exactly one level, 100 runners, and three devices.
-- Desktop mouse/keyboard first. Layout resizes; mobile play is not a target.
-- Editing and timelines live in memory. Reloading clears them.
-- Preview and Commit Run deliberately share physics.
-- Runs end at 60 simulated seconds. Any still-contained runner is counted as
-  stopped/dead, with an explicit contained-at-limit note. This prevents endless
-  stalled runs; it is not fire or falling damage.
-- Simple one-way platforms; no crushing, wall climbing, collision between
-  runners, pathfinding, or adaptive generations.
-- Ghosts use 15 Hz samples without interpolation; their movement can look less
-  smooth than the current population at high playback speed.
-- Canvas interactions are mouse-first. HTML controls have labels and keyboard
-  focus, but the spatial editor has no full screen-reader equivalent.
-- Tested interactively in the Chromium-based in-app browser. Firefox and Safari
-  compatibility is intended through standard APIs but not independently verified.
-- All art is procedural and original; see [asset provenance](ASSET_LICENSES.md).
-
-## Future Godot port
-
-This is a deliberate future port, not an attempt to reuse TypeScript in Godot.
-Preserve the rules, seeds, data models, and test fixtures.
-
-| Prototype | Godot equivalent |
-| --- | --- |
-| World and Game | Gameplay scene and mode controller |
-| Runner data and RunnerSystem | CharacterBody2D and small GDScript state machine |
-| Trap contract | Node2D / Area2D scenes |
-| LevelDefinition | Resource or level scene |
-| Collision rectangles | CollisionShape2D |
-| FixedStepper | `_physics_process()` |
-| RunnerRenderer / sprite definitions | Sprite2D / AnimatedSprite2D |
-| Recording | Transform samples and non-colliding replay nodes |
-
-RunnerStats are independent values ready for a later inheritance experiment.
-No mutation, generations, economy, progression, or evolution is implemented.
-
-**Next smallest experiment:** limit the player to three placed devices, then
-observe whether players move and combine them after seeing a ghost comparison.
-That tests meaningful redesign without adding a fourth trap or another level.
-Not implemented in v0.1.
-
-### Future privacy transition
-
-This prototype is intentionally public. Before a future Godot repository becomes
-private, explicitly review Pages configuration. **Making a repository private
-must not be assumed to make an existing Pages deployment private.** Later, leave
-this as an archived public demo, move it to a dedicated demo repository, or
-unpublish it. No privacy transition is performed here.
+Before making a future Godot repository private, explicitly review Pages:
+making a repository private must not be assumed to make its existing public
+deployment private. That transition is not part of this alpha.
 

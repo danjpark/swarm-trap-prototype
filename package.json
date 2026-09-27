@@ -1,12 +1,14 @@
 {
   "name": "swarm-trap-prototype",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.ts",
+    "benchmark": "node scripts/benchmark.ts"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

@@ -17,6 +17,10 @@ and trait ranges in those tests.
 
 ## One-screen first course
 
+All critters start together at the level's single spawn point. There is no
+per-runner position offset or staggered release; trait differences spread them
+out naturally after the run begins.
+
 Keep the entire start, hill, gap, and exit in view. Level 1 is 1,600 world units
 wide with a 96-unit gap. The camera fits width; rendering and pointer conversion
 use the same scale. There is no manual pan, follow toggle, or minimap.

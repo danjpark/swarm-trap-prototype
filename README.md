@@ -18,16 +18,17 @@ the current one.
 
 The first course is now short enough to see from start to exit at once. Its hill
 and gap remain, but the gap and reaction timing provide safe traversal for the
-entire starting population. Runners are not invulnerable: fire, altered movement,
+entire starting population. All 100 spawn together at the same starting point
+and spread out naturally as they run. Runners are not invulnerable: fire, altered movement,
 and falls after player modifications still count normally.
 
 Register future levels in `src/levels/index.ts`. The regression suite checks
 every registered level across 100 seeded populations and every extreme
-combination of supported Speed/Reaction/Agility traits, including all spawn
-positions. Default level devices are included in these checks. Do not accept a
+combination of supported Speed/Reaction/Agility traits from the shared spawn
+point. Default level devices are included in these checks. Do not accept a
 level that kills unmodified runners.
 
-Default level result: **100 escaped, 0 stopped**, about **8.1 seconds** at the
+Default level result: **100 escaped, 0 stopped**, about **8.2 seconds** at the
 fixed normal pace. No speed controls or device tuning are exposed in this alpha.
 
 ## Play

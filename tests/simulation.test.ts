@@ -22,12 +22,14 @@ function run(defs: TrapDefinition[] = []) {
   return w
 }
 
-test('100 independent bounded traits are reproducible', () => {
+test('100 independently seeded critters share one starting point', () => {
   const a = new World(level01), b = new World(level01), c = new World(level01,12)
   assert.deepEqual(a.runners,b.runners)
   assert.notDeepEqual(a.runners,c.runners)
   assert.equal(a.runners.length,100)
   assert.notEqual(a.runners[0].stats,a.runners[1].stats)
+  for (const r of a.runners) assert.deepEqual(r.position, a.runners[0].position)
+  assert.notEqual(a.runners[0].position, a.runners[1].position, 'positions remain independent objects')
   for (const r of a.runners) for (const v of Object.values(r.stats)) assert.ok(v>=.4&&v<=.6)
 })
 
@@ -40,7 +42,7 @@ test('EVERY registered level is safe for all 100 runners without player devices,
   }
 })
 
-test('baseline is safe at every extreme combination of supported traits and spawn positions', () => {
+test('baseline is safe at every extreme combination of supported traits from the shared spawn point', () => {
   for (const level of levels) for (const speed of [.4,.6]) for (const reaction of [.4,.6]) for (const agility of [.4,.6]) {
     const w = new World(level)
     w.traps = level.initialTraps.map(createTrap)

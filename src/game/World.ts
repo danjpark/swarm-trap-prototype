@@ -21,7 +21,7 @@ export class World {
     this.seed = seed
     const rng = new SeededRandom(seed)
     this.runners = Array.from({ length: population }, (_, id) => ({
-      id, position: { x: level.spawnPoint.x + id * 3.1, y: level.spawnPoint.y - RUNNER_HEIGHT },
+      id, position: { x: level.spawnPoint.x, y: level.spawnPoint.y - RUNNER_HEIGHT },
       velocity: { x: 0, y: 0 }, grounded: true, alive: true, finished: false,
       stats: { speed: rng.between(0.4, 0.6), reaction: rng.between(0.4, 0.6), agility: rng.between(0.4, 0.6) },
       state: 'running', supportId: null, pendingJump: -1, jumpCooldown: 0, deathTime: -1, deathCause: null,

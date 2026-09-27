@@ -2,9 +2,10 @@
 
 - Strict TypeScript compilation and production build pass.
 - All 14 regression tests pass.
-- Untouched level: **100 escaped / 0 stopped**, 8.125 simulated seconds.
+- Untouched level: **100 escaped / 0 stopped**, about 8.2 simulated seconds.
 - Safe baseline checked across 100 seeds (10,000 critters) and all eight extreme
-  trait combinations across all 100 starting positions (800 more critters).
+  trait combinations with all 100 critters sharing the spawn point (800 more critters).
+- Shared spawn coordinates are checked, while each runner keeps its own independent position object.
 - The test iterates the level registry and includes default level devices, so
   future registered levels must satisfy the same rule.
 - Fixed-timestep reproducibility still passes at all internal playback

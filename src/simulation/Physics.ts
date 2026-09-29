@@ -1,9 +1,10 @@
+import { GRAVITY } from './tuning.ts'
 import type { Runner } from './Runner.ts'
 import { RUNNER_HEIGHT, RUNNER_WIDTH, bounds } from './Runner.ts'
 import { overlaps } from '../types/geometry.ts'
 import type { Rectangle } from '../types/geometry.ts'
 export interface Surface extends Rectangle { id?: string; oneWay?: boolean; deltaY?: number }
-export const GRAVITY = 1100
+export { GRAVITY }
 export function integrate(r: Runner, dt: number, surfaces: Surface[]) {
   const oldY = r.position.y
   const previousBottom = oldY + RUNNER_HEIGHT

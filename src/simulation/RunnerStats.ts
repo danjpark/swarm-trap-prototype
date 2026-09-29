@@ -1,10 +1,9 @@
-export interface RunnerStats { speed: number; reaction: number; agility: number }
-export function averageStats(stats: RunnerStats[]): RunnerStats | null {
+import { TRAITS } from './traits.ts'
+import type { Genome } from './traits.ts'
+export type RunnerStats = Genome
+export function averageStats(stats: Genome[]): Genome | null {
   if (!stats.length) return null
-  return {
-    speed: stats.reduce((s, r) => s + r.speed, 0) / stats.length,
-    reaction: stats.reduce((s, r) => s + r.reaction, 0) / stats.length,
-    agility: stats.reduce((s, r) => s + r.agility, 0) / stats.length,
-  }
+  const average = {} as Genome
+  for (const trait of TRAITS) average[trait.key] = stats.reduce((sum, genome) => sum + genome[trait.key], 0) / stats.length
+  return average
 }
-

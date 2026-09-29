@@ -10,6 +10,9 @@ import type { TrapType, TrapDefinition } from '../traps/Trap.ts'
 import { RunRecorder } from '../replay/RunRecorder.ts'
 import type { Recording } from '../replay/RunRecorder.ts'
 import { GhostReplay } from '../replay/GhostReplay.ts'
+import { breedSurvivors } from '../simulation/evolution.ts'
+import type { Genome } from '../simulation/traits.ts'
+import { DEFAULT_SEED } from '../simulation/tuning.ts'
 export type GameMode='BUILD'|'PREVIEW'|'RUN'
 export class Game {
   world=new World(level01)
@@ -24,6 +27,12 @@ export class Game {
   previousRecording: Recording|null=null
   ghost: GhostReplay|null=null
   mode:GameMode='BUILD'
+  generation=1
+  currentGenomes:Genome[]|undefined
+  completedGeneration:number|null=null
+  extinct=false
+  previousAverages:Genome|null=null
+  resultAverages:Genome|null=null
   paused=false
   speed=1
   debug=false
@@ -47,8 +56,9 @@ export class Game {
   }
   syncTraps(){this.world.traps=this.editor.definitions.map(d=>createTrap(structuredClone(d)))}
   start(mode:'PREVIEW'|'RUN'){
+    if(this.extinct)return
     if(this.latestRecording){this.previousRecording=this.latestRecording;this.ghost=new GhostReplay(this.latestRecording)}
-    this.world=new World(level01);this.syncTraps()
+    this.world=new World(level01,DEFAULT_SEED,this.currentGenomes);this.syncTraps()
     this.mode=mode;this.paused=false;this.camera.x=0;this.camera.fit(level01.width)
     this.runFrames=0;this.runSeconds=0;this.runCost=0
     this.selectedRunner=null;this.candidate=null
@@ -56,10 +66,25 @@ export class Game {
     this.ui.inspect();this.ui.update()
   }
   build(){
-    this.mode='BUILD';this.paused=false;this.world=new World(level01);this.syncTraps();this.stepper.reset()
+    this.mode='BUILD';this.paused=false;this.world=new World(level01,DEFAULT_SEED,this.currentGenomes);this.syncTraps();this.stepper.reset()
     this.ui.inspect();this.ui.update()
   }
-  reset(){if(this.mode==='BUILD'){this.world=new World(level01);this.syncTraps();this.camera.x=0}else this.start(this.mode)}
+  reset(){if(this.mode==='BUILD'){this.world=new World(level01,DEFAULT_SEED,this.currentGenomes);this.syncTraps();this.camera.x=0}else this.start(this.mode)}
+  startOver(){
+    this.generation=1;this.currentGenomes=undefined;this.completedGeneration=null;this.extinct=false
+    this.previousAverages=null;this.resultAverages=null;this.latestRecording=null;this.previousRecording=null;this.ghost=null
+    this.build();this.ui.el('results-content').innerHTML='<p>Run the swarm to see what happens.</p>'
+  }
+  completeRun(){
+    this.completedGeneration=this.generation
+    this.previousAverages=this.resultAverages
+    this.resultAverages=this.world.survivorStats
+    const children=breedSurvivors(this.world.runners,this.generation)
+    if(children){
+      this.currentGenomes=children
+      this.generation++
+    }else this.extinct=true
+  }
   togglePause(){if(this.mode!=='BUILD'&&!this.world.complete){this.paused=!this.paused;this.stepper.reset();this.ui.update()}}
   selectTool(tool:TrapType|'select'){
     if(this.mode!=='BUILD')return
@@ -120,9 +145,10 @@ export class Game {
       if(e.key===' ')this.togglePause()
       if(e.key==='Escape')this.selectTool('select')
       if(e.key==='Delete'||e.key==='Backspace')this.deleteSelected()
-      if(e.key==='1')this.selectTool('fire')
-      if(e.key==='2')this.selectTool('track')
-      if(e.key==='3')this.selectTool('platform')
+      if(e.key==='1')this.selectTool('spike')
+      if(e.key==='2')this.selectTool('hammer')
+      if(e.key==='3')this.selectTool('track')
+      if(e.key==='4')this.selectTool('platform')
     })
   }
   frame(dt:number){
@@ -131,7 +157,7 @@ export class Game {
       this.stepper.advance(dt,this.speed,()=>{
         if(this.world.complete)return
         this.world.step();this.recorder.capture(this.world)
-        if(this.world.complete){this.latestRecording=this.recorder.finish(this.world);this.ui.results()}
+        if(this.world.complete){this.latestRecording=this.recorder.finish(this.world);this.completeRun();this.ui.results()}
       })
     }
     let candidate=this.candidate
@@ -145,4 +171,3 @@ export class Game {
     if(measure){this.runFrames++;this.runSeconds+=dt;this.runCost+=performance.now()-frameStart}
   }
 }
-

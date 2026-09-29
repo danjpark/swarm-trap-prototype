@@ -1,3 +1,4 @@
+import { PLATFORM_SPEED } from '../simulation/tuning.ts'
 import type { Trap, TrapDefinition } from './Trap.ts'
 export class VerticalPlatform implements Trap {
   definition: TrapDefinition
@@ -8,7 +9,7 @@ export class VerticalPlatform implements Trap {
     const min = this.definition.minY ?? this.definition.position.y - 128
     const max = this.definition.maxY ?? this.definition.position.y
     const range = Math.max(1, max - min)
-    const phase = (time * (this.definition.speed ?? 80)) % (range * 2)
+    const phase = (time * (this.definition.speed ?? PLATFORM_SPEED)) % (range * 2)
     const y = max - (phase <= range ? phase : range * 2 - phase)
     this.deltaY = y - this.position.y
     this.position.y = y

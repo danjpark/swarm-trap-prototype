@@ -8,5 +8,8 @@ export class SeededRandom {
     return ((t ^ t >>> 14) >>> 0) / 4294967296
   }
   between(min: number, max: number) { return min + this.next() * (max - min) }
+  normal(mean: number, sd: number) {
+    const u = 1 - this.next(), v = this.next()
+    return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
+  }
 }
-

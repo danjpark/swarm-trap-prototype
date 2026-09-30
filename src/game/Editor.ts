@@ -1,8 +1,9 @@
+import { WHEEL_RADIUS, WHEEL_ROTATION, WHEEL_ARMS, TRACK_FORCE, PLATFORM_SPEED } from '../simulation/tuning.ts'
 import type { LevelDefinition } from '../levels/LevelDefinition.ts'
 import type { TrapDefinition, TrapType } from '../traps/Trap.ts'
 import { clamp, overlaps } from '../types/geometry.ts'
 export const GRID = 32
-export const TRAP_NAMES = { fire: 'Fire Wheel', track: 'Reverse Track', platform: 'Vertical Platform' }
+export const TRAP_NAMES = { spike: 'Spike Wheel', hammer: 'Hammer Wheel', track: 'Reverse Track', platform: 'Vertical Platform' }
 export class Editor {
   definitions: TrapDefinition[] = []
   tool: TrapType | 'select' = 'select'
@@ -18,8 +19,8 @@ export class Editor {
       const floors = this.level.terrain.filter(t => x >= t.x && x + 128 <= t.x + t.width && Math.abs(t.y - y) <= 96)
       if (floors.length) y = Math.min(...floors.map(t => t.y))
     }
-    return { id: 'candidate', type, position: {x, y}, ...(type === 'fire' ? {radius:64, rotationSpeed:1.5, armCount:4} :
-      type === 'track' ? {strength:165} : { minY:Math.max(64, y - 128), maxY:y, speed:80 }) }
+    return { id: 'candidate', type, position: {x, y}, ...((type === 'spike' || type === 'hammer') ? {damageType: type === 'spike' ? 'piercing' as const : 'blunt' as const, radius:WHEEL_RADIUS, rotationSpeed:WHEEL_ROTATION, armCount:WHEEL_ARMS} :
+      type === 'track' ? {strength:TRACK_FORCE} : { minY:Math.max(64, y - 128), maxY:y, speed:PLATFORM_SPEED }) }
   }
   valid(d: TrapDefinition, ignoreId?: string) {
     const { x, y } = d.position
@@ -28,7 +29,7 @@ export class Editor {
     if (d.type === 'track') {
       if (!this.level.terrain.some(t => x >= t.x && x + width <= t.x + t.width && y === t.y)) return false
       if (this.level.terrain.some(t => overlaps({x,y:y-12,width,height:12}, t))) return false
-    } else if (d.type === 'fire') {
+    } else if ((d.type === 'spike' || d.type === 'hammer')) {
       if (this.level.terrain.some(t => overlaps({x:x-8,y:y-8,width:16,height:16},t))) return false
     } else {
       const minY = d.minY ?? y - 128, maxY = d.maxY ?? y
@@ -36,7 +37,7 @@ export class Editor {
       if (this.level.terrain.some(t => overlaps({x,y:minY,width,height:maxY-minY},t))) return false
     }
     return !this.definitions.some(other => other.id !== ignoreId && other.type === d.type &&
-      Math.abs(other.position.x - x) < (d.type === 'fire' ? 24 : width) && Math.abs(other.position.y - y) < 24)
+      Math.abs(other.position.x - x) < ((d.type === 'spike' || d.type === 'hammer') ? 24 : width) && Math.abs(other.position.y - y) < 24)
   }
   place(d: TrapDefinition) {
     if (!this.valid(d)) return false
@@ -58,7 +59,7 @@ export class Editor {
   hit(x: number, y: number) {
     return [...this.definitions].reverse().find(d => {
       const p = d.position
-      return d.type === 'fire' ? Math.hypot(x-p.x,y-p.y) < (d.radius ?? 64) + 12 :
+      return (d.type === 'spike' || d.type === 'hammer') ? Math.hypot(x-p.x,y-p.y) < (d.radius ?? 64) + 12 :
         x >= p.x - 8 && x <= p.x + (d.type === 'track' ? 128 : 96) + 8 && Math.abs(y-p.y) < 24
     })
   }

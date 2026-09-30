@@ -1,10 +1,12 @@
 import type { Rectangle, Vector2 } from '../types/geometry.ts'
 import type { Runner } from '../simulation/Runner.ts'
-export type TrapType = 'fire' | 'track' | 'platform'
+export type DamageType = 'blunt' | 'piercing'
+export type TrapType = 'spike' | 'hammer' | 'track' | 'platform'
 export interface TrapDefinition {
   id: string
   type: TrapType
   position: Vector2
+  damageType?: DamageType
   radius?: number
   rotationSpeed?: number
   armCount?: number
@@ -13,7 +15,7 @@ export interface TrapDefinition {
   maxY?: number
   speed?: number
 }
-export interface TrapContext { time: number; kill(runner: Runner, cause: 'fire'): void }
+export interface TrapContext { time: number; hit(runner: Runner, device: TrapDefinition): void }
 export interface Trap {
   definition: TrapDefinition
   position: Vector2

@@ -1,33 +1,27 @@
-# Verification — simplified alpha
+# Verification — HP and survivor evolution
 
-- Strict TypeScript compilation and production build pass.
-- All 14 regression tests pass.
-- Untouched level: **100 escaped / 0 stopped**, about 8.2 simulated seconds.
-- Safe baseline checked across 100 seeds (10,000 critters) and all eight extreme
-  trait combinations with all 100 critters sharing the spawn point (800 more critters).
-- Shared spawn coordinates are checked, while each runner keeps its own independent position object.
-- The test iterates the level registry and includes default level devices, so
-  future registered levels must satisfy the same rule.
-- Fixed-timestep reproducibility still passes at all internal playback
-  multipliers; the player UI uses a fixed 1× pace.
-- Physics checks cover wheel contact, conveyor slowdown, platform carrying and
-  one-way contact, placement constraints, recording, and population accounting.
-- Full-course camera regression verifies both start and exit remain in view.
+- Phase 1: 15 tests and production build passed. The proposed 0.3–0.7 movement
+  bounds failed the untouched-course extreme test: at the all-low combination,
+  0/100 reached the exit. Restored 0.4–0.6 hard bounds for speed, reaction, and
+  agility. Initial sampling remains uniform 0.4–0.6. HP 70–130 and shell −1 to +1
+  extremes pass.
+- Phase 2: 17 tests and production build passed. Multipliers, per-device cooldown,
+  and harmless wheel hub are checked.
+- Phase 3: 20 tests and production build passed. Finished-only breeding, bounded
+  offspring, extinction, abort behavior, and deterministic generation 5 pass.
+- Phase 4: 20 tests and production build passed. Untouched level remains 100/100
+  across 100 seeds and all 32 registered-trait extreme combinations.
 
-Browser checks use the production build in the Chromium-based in-app browser:
-the full course is visible, the baseline completes with all 100 runners,
-placement/dragging use the correct fitted scale, traps change the outcome,
-pause/resume works, and previous-run ghosts remain available.
+The test suite also checks fixed-step playback, placements, replay, timeout,
+platform behavior, and accounting.
 
-The interface has no trait averages, trap configuration inputs, frame counters,
-camera controls, playback-speed selector, or onboarding modal. Build tools and
-simulation controls are grouped beneath the canvas. The last experiment shows
-only counts and percentage stopped.
+## Merge verification
 
-Developer profiling remains available through `npm run benchmark`. Previous
-v0.1 measurements describe the older scrolling layout and should not be used as
-current performance claims.
-
-Firefox and Safari have not been independently checked. Mobile control is not
-a target; the full-width canvas scales down rather than introducing scrolling.
-
+- All 20 tests and the production build pass after the UI adjustments.
+- Production-preview browser check: the empty course finishes with 100 survivors;
+  the result offers Run next generation and returning to Build preserves generation 2.
+- Survivor traits expand on request and are collapsed by default.
+- Device cards use four desktop columns and two at 700px, with no horizontal
+  overflow at the checked smaller viewport. Updated docs/prototype.png.
+- No browser warnings or errors were captured during this smoke test.
+- PRs now run tests and builds before merging; deployment remains tied to main.

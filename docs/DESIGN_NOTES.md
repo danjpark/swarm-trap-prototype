@@ -35,6 +35,25 @@ conveyor force, or playback speed. The current default course takes about eight
 seconds, which is short enough to watch without a speed menu. This is an original
 tuning choice; it does not claim to reproduce any particular Mario game's units.
 
-Show simple counts and percent stopped. Keep runner traits, simulation metrics,
-and device configuration in code for later experiments, outside the player UI.
+Show generation and survivor counts. Keep average inherited HP and shell, with
+changes from the previous completed generation, inside a collapsed Survivor
+traits disclosure. Label the next run as the next generation. Keep technical
+metrics and device configuration outside the player UI.
 
+
+## Damage and inheritance
+
+Spike Wheel deals piercing damage; Hammer Wheel deals blunt damage. Each contact
+subtracts 35 × (1 ∓ 0.5 × shell) HP, with a 0.3-second cooldown per device and
+runner. The shell axis always trades one protection for the other. Falls and
+timeouts remain instant deaths. HP and shell affect appearance, while every
+collision remains 12×18.
+
+Only finishers are parents. Each child chooses two survivors with replacement,
+selects either parent's value independently per trait, adds seeded Gaussian
+mutation, and clamps to the registry bounds. Zero finishers cause extinction.
+An interrupted run leaves its generation intact; a completed run breeds the
+next generation. Start over resets the lineage and preserves placed devices.
+
+The proposed HP cost, movement-trait evolution policy, and damage tuning remain
+open design decisions.

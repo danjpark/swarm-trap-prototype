@@ -35,9 +35,10 @@ conveyor force, or playback speed. The current default course takes about eight
 seconds, which is short enough to watch without a speed menu. This is an original
 tuning choice; it does not claim to reproduce any particular Mario game's units.
 
-Show generation, survivor counts, and average survivor HP and shell with changes
-from the previous completed generation. Keep technical metrics and device
-configuration outside the player UI.
+Show generation and survivor counts. Keep average inherited HP and shell, with
+changes from the previous completed generation, inside a collapsed Survivor
+traits disclosure. Label the next run as the next generation. Keep technical
+metrics and device configuration outside the player UI.
 
 
 ## Damage and inheritance

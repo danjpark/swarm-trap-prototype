@@ -13,5 +13,15 @@
   across 100 seeds and all 32 registered-trait extreme combinations.
 
 The test suite also checks fixed-step playback, placements, replay, timeout,
-platform behavior, and accounting. Browser layout and interactions have not
-been independently inspected in this update.
+platform behavior, and accounting.
+
+## Merge verification
+
+- All 20 tests and the production build pass after the UI adjustments.
+- Production-preview browser check: the empty course finishes with 100 survivors;
+  the result offers Run next generation and returning to Build preserves generation 2.
+- Survivor traits expand on request and are collapsed by default.
+- Device cards use four desktop columns and two at 700px, with no horizontal
+  overflow at the checked smaller viewport. Updated docs/prototype.png.
+- No browser warnings or errors were captured during this smoke test.
+- PRs now run tests and builds before merging; deployment remains tied to main.

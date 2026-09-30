@@ -105,7 +105,7 @@ export class GameUI {
     this.el('results-content').innerHTML = `
       <p class="result-score"><strong>${percent}%</strong> stopped</p>
       <p class="result-summary">Generation ${this.game.completedGeneration} · ${c.dead} stopped · ${c.escaped} survivors</p>
-      ${avg ? `<p class="trait-summary">Avg HP ${avg.hp.toFixed(0)}${prev?delta(avg.hp,prev.hp,0):''} · Shell ${shell(avg.shell)}${prev?delta(avg.shell,prev.shell,2):''} (${avg.shell>0.05?'armored':avg.shell<-.05?'padded':'neutral'})</p>` : ''}
+      ${avg ? `<details class="trait-details"><summary>Survivor traits</summary><p>Avg inherited HP ${avg.hp.toFixed(0)}${prev?delta(avg.hp,prev.hp,0):''} · Shell ${shell(avg.shell)}${prev?delta(avg.shell,prev.shell,2):''} (${avg.shell>0.05?'armored':avg.shell<-.05?'padded':'neutral'})</p></details>` : ''}
       ${this.game.extinct ? `<p>Extinct in generation ${this.game.completedGeneration}</p><button id="start-over" class="quiet-button">Start over</button>` : ''}`
     this.update()
   }
@@ -118,15 +118,15 @@ export class GameUI {
     this.el('build-panel').classList.toggle('is-running', !build)
     this.el('build').setAttribute('aria-pressed', String(build))
     this.el('build-label').textContent = build ? 'Build mode' : '← Back to build'
-    this.el('mode-description').textContent = build ? 'Place a device, then run the swarm.' :
-      g.extinct ? `Extinct in generation ${g.completedGeneration}. Start over to try again.` :
-      g.world.complete ? 'Run complete. Change the course and try again.' :
-      g.paused ? 'Paused. Take a closer look.' : 'Swarm running — watch what changes.'
+    this.el('mode-description').textContent = g.extinct ? `Extinct in generation ${g.completedGeneration}. Start over to try again.` :
+      build ? `Generation ${g.generation} ready. Place a device, then run the swarm.` :
+      g.world.complete ? `Generation ${g.completedGeneration} complete. Generation ${g.generation} ready.` :
+      g.paused ? `Generation ${g.generation} paused.` : `Generation ${g.generation} running — watch what changes.`
     this.el('pause').hidden = build || g.world.complete
     this.el('reset').hidden = build || g.world.complete
     this.el('pause').textContent = g.paused ? 'Resume' : 'Pause'
     this.el<HTMLButtonElement>('preview').disabled = g.extinct || (!build && !g.world.complete)
-    this.el('preview').textContent = g.world.complete ? '▶ Run again' : '▶ Run swarm'
+    this.el('preview').textContent = g.generation > 1 && !g.extinct && (build || g.world.complete) ? '▶ Run next generation' : '▶ Run swarm'
     document.querySelectorAll<HTMLButtonElement>('[data-tool]').forEach(b => {
       b.disabled = !build
       b.setAttribute('aria-pressed', String(g.editor.tool === b.dataset.tool))

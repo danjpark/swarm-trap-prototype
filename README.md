@@ -45,8 +45,9 @@ indicate that editing is enabled.
 
 Pause and Restart appear only while a run is underway. **Show previous run**
 compares the last completed timeline in lavender with the current green
-creatures. The result panel shows generation, survivors, average survivor HP
-and shell, changes from the prior generation, and percent stopped. Technical
+creatures. The result panel shows generation, survivors, and percent stopped.
+Average inherited HP and shell and their changes are hidden under **Survivor traits**.
+**Run next generation** starts the offspring from the last completed run. Technical
 metrics, trap parameters, scrolling controls,
 the tutorial overlay, branding, and the duplicate Preview/Commit buttons are
 hidden or removed from the player interface.
@@ -91,7 +92,7 @@ src/
 tests/          deterministic regression checks
 scripts/        headless benchmark
 docs/           screenshot, design decisions, and verification notes
-.github/        Pages deployment workflow
+.github/        PR test/build checks and Pages deployment
 ```
 
 Physics runs at a deterministic 120 Hz; rendering uses requestAnimationFrame.
@@ -116,6 +117,12 @@ traps to Node2D/Area2D, definitions to Resources, the fixed loop to
 preserve the safe-baseline rule, behavior, seeds, and test fixtures.
 
 ## Deployment and limitations
+
+Use `main` as the shared source of truth. Prefer short-lived branches based on
+the latest `main`, then squash-merge reviewed PRs and delete their branches.
+Use separate checkouts when assistants work simultaneously. Small direct changes
+on `main` are fine when only one editor is working and tests/build pass first.
+Pull requests to `main` run tests and the production build without deploying.
 
 Pushes to `main` and manual dispatch run install → tests → build → Pages
 artifact upload → deployment. The publishing source is **GitHub Actions**.
